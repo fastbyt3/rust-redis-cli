@@ -44,7 +44,7 @@ jobs:
       - name: Build archive
         shell: bash
         run: |
-          binary_name="redis-rs-cli"
+          binary_name="redis-cli"
 
           dirname="$binary_name-${{ env.VERSION }}-${{ matrix.target }}"
           mkdir "$dirname"
