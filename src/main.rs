@@ -22,7 +22,11 @@ struct Args {
 fn main() {
     let args = Args::parse();
     let cfg = Config::new(&args.hostname, &args.port, args.auth);
-    let redis = Redis::new(cfg).unwrap();
+
+    let redis = Redis::new(cfg).unwrap_or_else(|e| {
+        println!("Failed to initialize Redis Client. Error => {}", e);
+        std::process::exit(1);
+    });
 
     let stdin = io::stdin();
     let mut stdout = io::stdout();
@@ -30,10 +34,12 @@ fn main() {
 
     write!(stdout, "CMD> ").unwrap();
     loop {
-        let connection = redis.get_connection().unwrap();
+        let connection = redis.get_connection().unwrap_or_else(|e| {
+            println!("Failed to get a connection. Error => {}", e);
+            std::process::exit(1);
+        });
         stdout.flush().unwrap();
         
-        write!(stdout, "OUT> ").unwrap();
         let mut input = String::new();
         stdin.read_line(&mut input).expect("Failed to read line from STDIN");
         
@@ -49,6 +55,7 @@ fn main() {
         
         match cmd.execute(connection) {
             Ok(msg) => {
+                write!(stdout, "OUT> ").unwrap();
                 writeln!(stdout, "{}", msg).unwrap();
                 writeln!(stdout, "-------------------------------------------").unwrap();
             }

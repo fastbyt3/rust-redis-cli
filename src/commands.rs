@@ -51,27 +51,42 @@ impl Command {
     pub fn execute(&self, mut connection: Connection) -> Result<String, String> {
         match self.command {
             CliCommands::KEYS => {
+                if self.arguments.len() != 1 {
+                    return Err(String::from("Syntax: KEYS pattern"));
+                }
                 let pattern = self.arguments.get(0).unwrap();
                 let keys: Vec<String> = connection.keys(pattern).map_err(|e| { format!("Failed to find keys: {}, Error: {}", pattern, e) })?;
                 return Ok(format!("Matching keys: {:?}", keys));
             },
             CliCommands::GET => {
+                if self.arguments.len() != 1 {
+                    return Err(String::from("Syntax: GET key"));
+                }
                 let key = self.arguments.get(0).unwrap();
                 let value: String = connection.get(key).map_err(|e| {format!("Failed to get key: {}, Error: {}", key, e)})?;
                 return Ok(format!("GOT :: {} => {}", key, value));
             },
             CliCommands::DEL => {
+                if self.arguments.len() != 1 {
+                    return Err(String::from("Syntax: DEL key"));
+                }
                 let key = self.arguments.get(0).unwrap();
                 let _ = connection.del(key).map_err(|e| { format!("Failed to delete key: {}. Error: {}", key, e) })?;
                 return Ok(format!("Successfully deleted: {}", key));
             },
             CliCommands::SET => {
+                if self.arguments.len() != 2 {
+                    return Err(String::from("Syntax: SET key value"));
+                }
                 let key = self.arguments.get(0).unwrap();
                 let value = self.arguments.get(1).unwrap();
                 let _ = connection.set(key, value).map_err(|e| { format!("Failed to set KV: {} -> {}. Error: {}", key, value, e) })?;
                 return Ok(format!("Successfully set: {}:{}", key, value));
             },
             CliCommands::SETEX => {
+                if self.arguments.len() != 3 {
+                    return Err(String::from("Syntax: SETEX key value ex"));
+                }
                 let key = self.arguments.get(0).unwrap();
                 let value = self.arguments.get(1).unwrap();
                 let seconds = self.arguments.get(2).unwrap().parse::<u64>().unwrap();
@@ -79,6 +94,9 @@ impl Command {
                 return Ok(format!("Successfully set: {}:{} with TTL = {}", key, value, seconds));
             },
             CliCommands::TTL => {
+                if self.arguments.len() != 1 {
+                    return Err(String::from("Syntax: TTL key"));
+                }
                 let key = self.arguments.get(0).unwrap();
                 let ttl: u64 = connection.ttl(key).map_err(|e| { format!("Failed to retrieve TTL of {}. Error: {}", key, e) })?;
                 return Ok(format!("TTL of {} ===> {}", key, ttl));
