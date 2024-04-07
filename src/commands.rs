@@ -1,4 +1,4 @@
-use std::u64;
+use std::{fs::OpenOptions, io::Write, u64};
 
 use redis::{Commands, Connection};
 
@@ -11,6 +11,7 @@ enum CliCommands {
     TTL,
     DEL,
     QUIT,
+    LOG,
 }
 
 impl TryFrom<&str> for CliCommands {
@@ -25,6 +26,7 @@ impl TryFrom<&str> for CliCommands {
             "TTL" | "ttl" => Ok(Self::TTL),
             "DEL" | "del" => Ok(Self::DEL),
             "QUIT" | "quit" => Ok(Self::QUIT),
+            "LOG" | "log" => Ok(Self::LOG),
             _ => Err(format!("Failed to parse command: {}", value)),
         }
     }
@@ -37,7 +39,7 @@ pub struct Command {
 }
 
 impl Command {
-    pub fn new(input: String) -> Result<Self, String> {
+    pub fn new(input: &str) -> Result<Self, String> {
         let mut split = input.split_whitespace();
         let cmd = CliCommands::try_from(split.next().unwrap())?;
         let rest = split.map(|s| s.to_owned()).collect::<Vec<String>>();
@@ -104,7 +106,28 @@ impl Command {
             CliCommands::QUIT => {
                 println!("Quitting app...");
                 std::process::exit(0);
-            }
+            },
+            CliCommands::LOG => {
+                if self.arguments.len() < 2 {
+                    return Err(String::from("Syntax: LOG <valid CLI command>"));
+                }
+                let cmd_string = self.arguments.join(" ");
+                let cmd = Self::new(&cmd_string)?;
+                let out =  cmd.execute(connection)?;
+
+                let mut file = OpenOptions::new()
+                    .create(true)
+                    .append(true)
+                    .open("redis-op.log")
+                    .map_err(|e| { format!("Failed to open log file: {}", e) })?;
+
+                let datetime = chrono::prelude::Local::now().format("%Y-%m-%d %H:%M:%S");
+                file.write_all(format!("[{}]\nCMD: {}\nOUT: {}\n\n", datetime, cmd_string, out).as_bytes()).map_err(|e| {
+                    format!("Failed to write to log file: {}", e)
+                })?;
+
+                Ok(String::from("Wrote output to file: redis-op.txt"))
+            },
         }
     }
 }

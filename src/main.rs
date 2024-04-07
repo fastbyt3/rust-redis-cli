@@ -43,7 +43,7 @@ fn main() {
         let mut input = String::new();
         stdin.read_line(&mut input).expect("Failed to read line from STDIN");
         
-        let result = Command::new(input);
+        let result = Command::new(&input);
         let cmd: Command;
 
         if let Err(e) = result {
