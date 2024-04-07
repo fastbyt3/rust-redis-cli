@@ -11,4 +11,5 @@ CLI Commands
 - `SETEX <key> <value> <expiry>` -> Set Key-value pair with key expiry in **seconds**
 - `DEL <key>` -> Delete key
 - `TTL <key>` -> Get TTL (Time To Live) for key
+- `LOG <above commands>` -> writes output of command to file: `redis-op.log`
 
