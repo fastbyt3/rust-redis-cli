@@ -9,7 +9,9 @@ impl Config {
     pub fn new(host_name: &str, port: &str, auth: Option<String>) -> Self {
         Self {
             host_name: host_name.to_owned(),
-            port: port.parse::<u16>().expect("Failed to parse port number as an integer"),
+            port: port
+                .parse::<u16>()
+                .expect("Failed to parse port number as an integer"),
             auth,
         }
     }

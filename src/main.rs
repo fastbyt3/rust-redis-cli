@@ -39,10 +39,12 @@ fn main() {
             std::process::exit(1);
         });
         stdout.flush().unwrap();
-        
+
         let mut input = String::new();
-        stdin.read_line(&mut input).expect("Failed to read line from STDIN");
-        
+        stdin
+            .read_line(&mut input)
+            .expect("Failed to read line from STDIN");
+
         let result = Command::new(&input);
         let cmd: Command;
 
@@ -52,7 +54,7 @@ fn main() {
         } else {
             cmd = result.unwrap();
         }
-        
+
         match cmd.execute(connection) {
             Ok(msg) => {
                 write!(stdout, "OUT> ").unwrap();
@@ -66,4 +68,3 @@ fn main() {
         write!(stdout, "CMD> ").unwrap();
     }
 }
-
