@@ -15,11 +15,18 @@ jobs:
 
     strategy:
       matrix:
-        # You can add more, for any target you'd like!
         include:
           - build: linux
             os: ubuntu-latest
             target: x86_64-unknown-linux-musl
+
+          - build: macos
+            os: macos-latest
+            target: x86_64-apple-darwin
+
+          - build: windows-gnu
+            os: windows-latest
+            target: x86_64-pc-windows-gnu
 
     steps:
       - name: Checkout
@@ -46,21 +53,15 @@ jobs:
         run: |
           binary_name="redis-cli"
 
-          dirname="$binary_name-${{ env.VERSION }}-${{ matrix.target }}"
+          binary_release="$binary_name-${{ env.VERSION }}-${{ matrix.target }}"
           mkdir "$dirname"
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            mv "target/${{ matrix.target }}/release/$binary_name.exe" "$dirname"
+            mv "target/${{ matrix.target }}/release/$binary_name.exe" "$binary_release"
           else
-            mv "target/${{ matrix.target }}/release/$binary_name" "$dirname"
+            mv "target/${{ matrix.target }}/release/$binary_name" "$binary_release"
           fi
 
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            7z a "$dirname.zip" "$dirname"
-            echo "ASSET=$dirname.zip" >> $GITHUB_ENV
-          else
-            tar -czf "$dirname.tar.gz" "$dirname"
-            echo "ASSET=$dirname.tar.gz" >> $GITHUB_ENV
-          fi
+          echo "ASSET=$binary_release" >> $GITHUB_ENV
 
       - name: Release
         uses: softprops/action-gh-release@v1
