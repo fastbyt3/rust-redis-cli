@@ -22,9 +22,12 @@ struct Args {
 fn main() {
     let args = Args::parse();
     let cfg = Config::new(&args.hostname, &args.port, args.auth);
+    let redis_url = cfg.generate_url();
 
     let redis = Redis::new(cfg).unwrap_or_else(|e| {
-        println!("Failed to initialize Redis Client. Error => {}", e);
+        println!("Failed to initialize Redis Client.");
+        println!("Connection string: {}", redis_url);
+        println!("Error: {}", e);
         std::process::exit(1);
     });
 
