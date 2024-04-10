@@ -39,6 +39,7 @@ fn main() {
     loop {
         let connection = redis.get_connection().unwrap_or_else(|e| {
             println!("Failed to get a connection. Error => {}", e);
+            println!("Connection string: {}", redis_url);
             std::process::exit(1);
         });
         stdout.flush().unwrap();
